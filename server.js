@@ -1,20 +1,14 @@
 var express = require('express');
 var session = require('express-session');
-var MySQLStore = require('express-mysql-session')(session);
 var bodyParser = require('body-parser');
+var FileStore = require('session-file-store')(session);
 var app = express();
 app.use(bodyParser.urlencoded({extended : false}));
 app.use(session({
 	secret : 'asdklj;vlkjcxl21341341@$!@',
 	resave : false,
 	saveUninitialized : true,
-	store : new MySQLStore({
-		host : 'localhost',
-		port : 3306,
-		user : 'node',
-		password : 'nodenode',
-		database : 'o2'
-	})
+	store : new FileStore()
 }));
 
 app.get('/count', function(req, res){
@@ -25,12 +19,14 @@ app.get('/count', function(req, res){
   }
   res.send('count : '+req.session.count);
 });
+
 app.get('/auth/logout', function(req, res){
   delete req.session.displayName;
   req.session.save(function(){
       res.redirect('/welcome');
   });
 });
+
 app.get('/welcome', function(req, res){
   if(req.session.displayName) {
     res.send(`
@@ -40,25 +36,85 @@ app.get('/welcome', function(req, res){
   } else {
     res.send(`
       <h1>Welcome</h1>
-      <a href="/auth/login">Login</a>
+      <ul>
+		<li><a href="/auth/login">Login</a></li>
+		<li><a href="/auth/register">Register</a></li>
+      </ul>
+      
     `);
   }
 });
+
+app.get('/auth/register',function(req,res){
+	var output = `
+
+	<h1> Register </h1>
+	 <form action="/auth/register" method="post">
+    <p>
+      <input type="text" name="username" placeholder="username">
+    </p>
+    <p>
+      <input type="password" name="password" placeholder="password">
+    </p>
+    <p>
+      <input type="text" name="displayName" placeholder="displayName">
+    </p>
+    <p>
+      <input type="submit">
+    </p>
+  </form>
+	`
+
+	res.send(output);
+});
+
+app.post('/auth/register',function(req,res){
+
+	var user = {
+	    username : req.body.username,
+		password : req.body.password,
+		displayName : req.body.displayName
+	}
+
+	users.push(user);
+	res.send(users);
+});
+
+
+var users = [
+	{
+		username : 'egoing',
+		password : '111',
+		displayName:'Egoing'
+	}
+	
+]
+
+
 app.post('/auth/login', function(req, res){
   var user = {
     username:'egoing',
     password:'111',
     displayName:'Egoing'
   };
+
   var uname = req.body.username;
   var pwd = req.body.password;
-  if(uname === user.username && pwd === user.password){
+  
+  for(var i=0; i<users.length; i++)
+  {
+  	var user = users[i];
+  	console.log(user);
+  	if(uname === user.username && pwd === user.password){
     req.session.displayName = user.displayName;
-    req.session.save(function(){
+    
+    return req.session.save(function(){
         res.redirect('/welcome');
     });
   } else {
     res.send('Who are you? <a href="/auth/login">login</a>');
+  }
+
   }
 });
 app.get('/auth/login', function(req, res){
@@ -78,6 +134,7 @@ app.get('/auth/login', function(req, res){
   `;
   res.send(output);
 });
+
 app.listen(3003, function(){
   console.log('Connected 3003 port!!!');
 });

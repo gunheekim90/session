@@ -7,9 +7,11 @@
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
     "express-mysql": "0.0.1",
+    "express-mysql-session": "^1.0.0-rc.0",
     "express-session": "^1.13.0",
     "mysql": "^2.10.2",
-    "session": "^0.1.0"
+    "session": "^0.1.0",
+    "session-file-store": "^0.2.0"
   },
   "devDependencies": {},
   "scripts": {
